@@ -16,9 +16,16 @@
 <main class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
     <div><h1 class="h3 mb-1">Productos</h1><p class="text-secondary mb-0">Productos e imágenes de MySQL y MongoDB</p></div>
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#formularioModal" {% if error_carga %}disabled{% endif %}>
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><use href="#agregar"/></svg> Agregar producto
-    </button>
+    <div class="d-flex align-items-center gap-3">
+      <span class="text-secondary small">Sesión: <strong>{{ session.user }}</strong></span>
+      <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#formularioModal" {% if error_carga %}disabled{% endif %}>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><use href="#agregar"/></svg> Agregar producto
+      </button>
+      <form action="{{ url_for('auth_c.logout') }}" method="post" class="d-inline">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <button type="submit" class="btn btn-outline-secondary">Cerrar sesión</button>
+      </form>
+    </div>
   </div>
   {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
   <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">{{ mensaje }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
@@ -27,7 +34,7 @@
   <table class="table table-hover align-middle mb-0">
     <thead class="table-dark"><tr>
       <th scope="col">idproducto</th><th scope="col">Producto</th><th scope="col">Marca</th><th scope="col">Precio</th>
-      <th scope="col">Descripción</th><th scope="col">Imagen</th><th scope="col">Bases de datos</th><th scope="col" class="text-end">Acciones</th>
+      <th scope="col">Descripción</th><th scope="col">Imagen</th><th scope="col">Tamaño</th><th scope="col">Bases de datos</th><th scope="col" class="text-end">Acciones</th>
     </tr></thead>
     <tbody>
     {% for i in data %}
@@ -35,7 +42,24 @@
       <th scope="row">{{ i.idproducto if i.idproducto is not none else 'Pendiente' }}</th>
       <td>{{ i.producto }}</td><td>{{ i.marca or '—' }}</td><td class="text-nowrap">{{ i.precio if i.precio != '' else 'Pendiente' }}</td>
       <td style="min-width: 160px; max-width: 300px; overflow-wrap: anywhere">{{ i.descripcion or '—' }}</td>
-      <td>{% if i.url.startswith('https://') or i.url.startswith('http://') %}<img src="{{ i.url }}" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="no-referrer" alt="{{ i.producto }}">{% else %}<span class="text-secondary">Sin imagen</span>{% endif %}</td>
+      <td>
+        {% if i.almacenamiento == 'disco_comprimido' %}
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('productos_c.servir_imagen', clave=i.clave) }}" target="_blank" rel="noopener">Ver imagen</a>
+        {% elif i.almacenamiento in ('mysql_blob', 'disco') %}
+        <img src="{{ url_for('productos_c.servir_imagen', clave=i.clave) }}" width="90" height="65" style="object-fit: contain" loading="lazy" alt="{{ i.producto }}">
+        {% elif i.url.startswith('https://') or i.url.startswith('http://') %}
+        <img src="{{ i.url }}" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="no-referrer" alt="{{ i.producto }}">
+        {% else %}<span class="text-secondary">Sin imagen</span>{% endif %}
+      </td>
+      <td class="small" style="min-width: 150px; max-width: 240px">
+        {% if i.almacenamiento == 'mysql_blob' %}<span class="badge text-bg-light text-dark border">MySQL: {{ i.tamano_mysql_legible }}</span>
+        {% elif i.almacenamiento == 'disco' %}<span class="badge text-bg-light text-dark border">Disco: {{ i.tamano_original_legible }}</span>
+        <div class="text-secondary text-break mt-1" title="{{ i.ruta_imagen }}"><code>{{ i.ruta_imagen }}</code></div>
+        {% elif i.almacenamiento == 'disco_comprimido' %}<span class="badge text-bg-light text-dark border">Original: {{ i.tamano_original_legible }}</span>
+        <span class="badge text-bg-light text-dark border mt-1">Comprimida: {{ i.tamano_comprimido_legible }}</span>
+        <div class="text-secondary text-break mt-1" title="{{ i.ruta_imagen_comprimida }}"><code>{{ i.ruta_imagen_comprimida }}</code></div>
+        {% else %}<span class="text-secondary">—</span>{% endif %}
+      </td>
       <td><span class="badge {{ 'text-bg-success' if i.origen == 'MySQL + MongoDB' else 'text-bg-warning' }}">{{ i.origen }}</span></td>
       <td class="text-end text-nowrap">
         <button type="button" class="btn btn-outline-primary btn-sm" title="Editar producto" aria-label="Editar {{ i.producto }}" data-bs-toggle="modal" data-bs-target="#formularioModal"
@@ -47,7 +71,7 @@
         </button>
       </td>
     </tr>
-    {% else %}<tr><td colspan="8" class="text-center text-secondary py-5">{{ 'No se pudieron consultar las bases de datos.' if error_carga else 'No hay productos. Agrega el primero con el botón superior.' }}</td></tr>{% endfor %}
+    {% else %}<tr><td colspan="9" class="text-center text-secondary py-5">{{ 'No se pudieron consultar las bases de datos.' if error_carga else 'No hay productos. Agrega el primero con el botón superior.' }}</td></tr>{% endfor %}
     </tbody>
   </table>
   </div></div>
@@ -64,7 +88,8 @@
           <div class="col-md-6"><label for="producto" class="form-label">Producto *</label><input class="form-control" id="producto" name="producto" required maxlength="200"><div class="invalid-feedback">Escribe el nombre del producto.</div></div>
           <div class="col-md-6"><label for="marca" class="form-label">Marca *</label><input class="form-control" id="marca" name="marca" required maxlength="200"><div class="invalid-feedback">Escribe la marca.</div></div>
           <div class="col-md-6"><label for="precio" class="form-label">Precio *</label><input class="form-control" id="precio" name="precio" type="text" inputmode="decimal" required pattern="[0-9]+([.,][0-9]{1,2})?" maxlength="13" aria-describedby="precioAyuda"><div id="precioAyuda" class="form-text">Solo números, desde 0, con máximo dos decimales.</div><div class="invalid-feedback">Ingresa un precio válido, por ejemplo 150.00.</div></div>
-          <div class="col-md-6"><label for="url" class="form-label">URL de la imagen</label><input class="form-control" id="url" name="url" type="url" pattern="https?://.+" maxlength="2000" placeholder="https://..."><div class="invalid-feedback">Ingresa una dirección http:// o https:// válida.</div></div>
+          <div class="col-md-6"><label for="url" class="form-label">URL de la imagen</label><input class="form-control" id="url" name="url" type="url" pattern="https?://.+" maxlength="2000" placeholder="https://..."><div class="invalid-feedback">Ingresa una dirección http:// o https:// válida.</div>
+            <div class="form-text">El servidor descarga esa imagen y la guarda cifrada: ≤1&nbsp;MB va a MySQL, de 1 a 3&nbsp;MB a <code>/images</code>, y &gt;3&nbsp;MB se comprime antes de guardarse en <code>/images/images-compress</code>. Si dejas la misma URL de antes, no se vuelve a descargar.</div></div>
           <div class="col-12"><label for="descripcion" class="form-label">Descripción</label><textarea class="form-control" id="descripcion" name="descripcion" rows="3" maxlength="2000"></textarea></div>
         </div>
       </div>

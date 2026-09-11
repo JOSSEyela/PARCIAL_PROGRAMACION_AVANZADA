@@ -1,0 +1,10 @@
+/env/
+__pycache__/
+*.pyc
+.env
+
+# Imágenes subidas (cifradas): el contenido no se versiona, solo la carpeta.
+images/*
+!images/.gitkeep
+images/images-compress/*
+!images/images-compress/.gitkeep

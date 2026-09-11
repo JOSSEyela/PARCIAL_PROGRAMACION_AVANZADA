@@ -17,6 +17,12 @@ def probar():
   client = app.test_client()
   datos = dict(producto=nombre, marca='Prueba', precio='19.95', descripcion='Temporal', url='')
   try:
+    # Sin sesión activa, las rutas de datos ahora redirigen al login.
+    assert app.test_client().get('/productos').status_code == 302
+    # Se inyecta la sesión directamente (igual que ya se hacía con csrf_token)
+    # para no depender de un usuario real registrado en MySQL.
+    with client.session_transaction() as sesion:
+      sesion['user'] = '__prueba_crud'
     assert client.get('/productos').status_code == 200
     assert client.get('/imagenes_productos').status_code == 200
     with client.session_transaction() as sesion:

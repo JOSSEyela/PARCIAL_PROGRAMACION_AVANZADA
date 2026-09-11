@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<main class="container d-flex align-items-center justify-content-center" style="min-height: 100vh">
+  <div class="card shadow-sm" style="width: 100%; max-width: 380px">
+    <div class="card-body p-4">
+      <h1 class="h4 mb-3 text-center">Crear cuenta</h1>
+      {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">{{ mensaje }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+      {% endfor %}
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}">
+        <div class="mb-3">
+          <label for="user" class="form-label">Usuario</label>
+          <input class="form-control" id="user" name="user" required minlength="3" maxlength="80" autofocus>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Contraseña</label>
+          <input class="form-control" id="password" name="password" type="password" required minlength="8">
+          <div class="form-text">Mínimo 8 caracteres.</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Registrarme</button>
+      </form>
+      <p class="text-center small text-secondary mt-3 mb-0">¿Ya tienes cuenta? <a href="{{ url_for('auth_c.login') }}">Inicia sesión</a></p>
+    </div>
+  </div>
+</main>
+</body>
+</html>

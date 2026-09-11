@@ -1,0 +1,57 @@
+<tbody>
+    
+    <tr>
+      <th scope="row">1</th>
+      <td>Teclado mecánico</td><td>Redragon</td><td class="text-nowrap">150</td>
+      <td style="min-width: 160px; max-width: 300px; overflow-wrap: anywhere">descripción de teclado</td>
+      <td>
+        
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3OTKrnx6Hs3Sji4nsu76XmINJdlUi1OPDEg&amp;s" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="no-referrer" alt="Teclado mecánico">
+        
+      </td>
+      <td class="small" style="min-width: 150px; max-width: 240px">
+        <span class="text-secondary">—</span>
+      </td>
+      <td><span class="badge text-bg-success">MySQL + MongoDB</span></td>
+      <td class="text-end text-nowrap">
+        <button type="button" class="btn btn-outline-primary btn-sm" title="Editar producto" aria-label="Editar Teclado mecánico" data-bs-toggle="modal" data-bs-target="#formularioModal"
+          data-clave="sql-1" data-producto="Teclado mecánico" data-marca="Redragon" data-precio="150" data-descripcion="descripción de teclado" data-url="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS3OTKrnx6Hs3Sji4nsu76XmINJdlUi1OPDEg&amp;s">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#editar"/></svg>
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar producto" aria-label="Eliminar Teclado mecánico" data-bs-toggle="modal" data-bs-target="#eliminarModal" data-clave="sql-1" data-producto="Teclado mecánico">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#eliminar"/></svg>
+        </button>
+      </td>
+    </tr>
+    
+    <tr>
+      <th scope="row">2</th>
+      <td>Monitor 24 pulgadas</td><td>Samsung</td><td class="text-nowrap">900</td>
+      <td style="min-width: 160px; max-width: 300px; overflow-wrap: anywhere">descripción de monitor</td>
+      <td>
+        
+        <img src="https://exitocol.vtexassets.com/arquivos/ids/22922241/monitor-pc-24-pulgadas.jpg?v=638521930797130000" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="no-referrer" alt="Monitor 24 pulgadas">
+        
+      </td>
+      <td class="small" style="min-width: 150px; max-width: 240px">
+        <span class="text-secondary">—</span>
+      </td>
+      <td><span class="badge text-bg-success">MySQL + MongoDB</span></td>
+      <td class="text-end text-nowrap">
+        <button type="button" class="btn btn-outline-primary btn-sm" title="Editar producto" aria-label="Editar Monitor 24 pulgadas" data-bs-toggle="modal" data-bs-target="#formularioModal"
+          data-clave="sql-2" data-producto="Monitor 24 pulgadas" data-marca="Samsung" data-precio="900" data-descripcion="descripción de monitor" data-url="https://exitocol.vtexassets.com/arquivos/ids/22922241/monitor-pc-24-pulgadas.jpg?v=638521930797130000">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#editar"/></svg>
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar producto" aria-label="Eliminar Monitor 24 pulgadas" data-bs-toggle="modal" data-bs-target="#eliminarModal" data-clave="sql-2" data-producto="Monitor 24 pulgadas">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#eliminar"/></svg>
+        </button>
+      </td>
+    </tr>
+    
+    <tr>
+      <th scope="row">Pendiente</th>
+      <td>iphone</td><td>—</td><td class="text-nowrap">Pendiente</td>
+      <td style="min-width: 160px; max-width: 300px; overflow-wrap: anywhere">descripción de iphone</td>
+      <td>
+        
+        <img src="https://www.apple.com/v/iphone/home/cj/images/meta/iphone__bh930eyjnj0i_og.png?202604020923" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="n
