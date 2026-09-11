@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light">
+<svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+  <symbol id="agregar" viewBox="0 0 16 16"><path d="M8 2v12M2 8h12"/></symbol>
+  <symbol id="editar" viewBox="0 0 16 16"><path d="m10 2 4 4-8 8H2v-4zM8 4l4 4"/></symbol>
+  <symbol id="eliminar" viewBox="0 0 16 16"><path d="M2 4h12M6 4V2h4v2M4 4l1 10h6l1-10M7 6v6M9 6v6"/></symbol>
+</svg>
+<main class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div><h1 class="h3 mb-1">Productos</h1><p class="text-secondary mb-0">Productos e imágenes de MySQL y MongoDB</p></div>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#formularioModal" {% if error_carga %}disabled{% endif %}>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><use href="#agregar"/></svg> Agregar producto
+    </button>
+  </div>
+  {% for categoria, mensaje in get_flashed_messages(with_categories=true) %}
+  <div class="alert alert-{{ categoria }} alert-dismissible fade show" role="alert">{{ mensaje }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>
+  {% endfor %}
+  <div class="card shadow-sm"><div class="table-responsive">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-dark"><tr>
+      <th scope="col">idproducto</th><th scope="col">Producto</th><th scope="col">Marca</th><th scope="col">Precio</th>
+      <th scope="col">Descripción</th><th scope="col">Imagen</th><th scope="col">Bases de datos</th><th scope="col" class="text-end">Acciones</th>
+    </tr></thead>
+    <tbody>
+    {% for i in data %}
+    <tr>
+      <th scope="row">{{ i.idproducto if i.idproducto is not none else 'Pendiente' }}</th>
+      <td>{{ i.producto }}</td><td>{{ i.marca or '—' }}</td><td class="text-nowrap">{{ i.precio if i.precio != '' else 'Pendiente' }}</td>
+      <td style="min-width: 160px; max-width: 300px; overflow-wrap: anywhere">{{ i.descripcion or '—' }}</td>
+      <td>{% if i.url.startswith('https://') or i.url.startswith('http://') %}<img src="{{ i.url }}" width="90" height="65" style="object-fit: contain" loading="lazy" referrerpolicy="no-referrer" alt="{{ i.producto }}">{% else %}<span class="text-secondary">Sin imagen</span>{% endif %}</td>
+      <td><span class="badge {{ 'text-bg-success' if i.origen == 'MySQL + MongoDB' else 'text-bg-warning' }}">{{ i.origen }}</span></td>
+      <td class="text-end text-nowrap">
+        <button type="button" class="btn btn-outline-primary btn-sm" title="Editar producto" aria-label="Editar {{ i.producto }}" data-bs-toggle="modal" data-bs-target="#formularioModal"
+          data-clave="{{ i.clave }}" data-producto="{{ i.producto }}" data-marca="{{ i.marca }}" data-precio="{{ i.precio }}" data-descripcion="{{ i.descripcion }}" data-url="{{ i.url }}">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#editar"/></svg>
+        </button>
+        <button type="button" class="btn btn-outline-danger btn-sm" title="Eliminar producto" aria-label="Eliminar {{ i.producto }}" data-bs-toggle="modal" data-bs-target="#eliminarModal" data-clave="{{ i.clave }}" data-producto="{{ i.producto }}">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><use href="#eliminar"/></svg>
+        </button>
+      </td>
+    </tr>
+    {% else %}<tr><td colspan="8" class="text-center text-secondary py-5">{{ 'No se pudieron consultar las bases de datos.' if error_carga else 'No hay productos. Agrega el primero con el botón superior.' }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+  </div></div>
+  <p class="small text-secondary mt-3">Los registros pendientes se completan en ambas bases al editarlos y guardarlos.</p>
+</main>
+<div class="modal fade" id="formularioModal" tabindex="-1" aria-labelledby="formularioTitulo" aria-hidden="true">
+  <div class="modal-dialog modal-lg"><div class="modal-content">
+    <form action="{{ url_for('productos_c.guardar_producto') }}" method="post" id="productoForm" novalidate>
+      <div class="modal-header"><h2 class="modal-title fs-5" id="formularioTitulo">Agregar producto</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+      <div class="modal-body">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><input type="hidden" name="clave" id="clave">
+        <div class="alert alert-warning d-none" id="validacion" role="alert"></div>
+        <div class="row g-3">
+          <div class="col-md-6"><label for="producto" class="form-label">Producto *</label><input class="form-control" id="producto" name="producto" required maxlength="200"><div class="invalid-feedback">Escribe el nombre del producto.</div></div>
+          <div class="col-md-6"><label for="marca" class="form-label">Marca *</label><input class="form-control" id="marca" name="marca" required maxlength="200"><div class="invalid-feedback">Escribe la marca.</div></div>
+          <div class="col-md-6"><label for="precio" class="form-label">Precio *</label><input class="form-control" id="precio" name="precio" type="text" inputmode="decimal" required pattern="[0-9]+([.,][0-9]{1,2})?" maxlength="13" aria-describedby="precioAyuda"><div id="precioAyuda" class="form-text">Solo números, desde 0, con máximo dos decimales.</div><div class="invalid-feedback">Ingresa un precio válido, por ejemplo 150.00.</div></div>
+          <div class="col-md-6"><label for="url" class="form-label">URL de la imagen</label><input class="form-control" id="url" name="url" type="url" pattern="https?://.+" maxlength="2000" placeholder="https://..."><div class="invalid-feedback">Ingresa una dirección http:// o https:// válida.</div></div>
+          <div class="col-12"><label for="descripcion" class="form-label">Descripción</label><textarea class="form-control" id="descripcion" name="descripcion" rows="3" maxlength="2000"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-success">Guardar en ambas bases</button></div>
+    </form>
+  </div></div>
+</div>
+<div class="modal fade" id="eliminarModal" tabindex="-1" aria-labelledby="eliminarTitulo" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <form action="{{ url_for('productos_c.eliminar_producto') }}" method="post">
+      <div class="modal-header"><h2 class="modal-title fs-5" id="eliminarTitulo">Confirmar eliminación</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button></div>
+      <div class="modal-body"><input type="hidden" name="csrf_token" value="{{ session.csrf_token }}"><input type="hidden" name="clave" id="eliminarClave">
+        <p>¿Estás seguro de que quieres eliminar <strong id="eliminarNombre"></strong>?</p><p class="text-danger mb-0">Se eliminará la fila de MySQL y su documento de MongoDB. Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger">Sí, eliminar</button></div>
+    </form>
+  </div></div>
+</div>
+<script>
+const formulario = document.getElementById('productoForm');
+const aviso = document.getElementById('validacion');
+document.getElementById('formularioModal').addEventListener('show.bs.modal', event => {
+  formulario.reset();
+  formulario.classList.remove('was-validated');
+  aviso.classList.add('d-none');
+  const datos = event.relatedTarget.dataset;
+  document.getElementById('formularioTitulo').textContent = datos.clave ? 'Editar producto' : 'Agregar producto';
+  for (const campo of ['clave', 'producto', 'marca', 'precio', 'descripcion', 'url']) document.getElementById(campo).value = datos[campo] || '';
+});
+document.getElementById('eliminarModal').addEventListener('show.bs.modal', event => {
+  document.getElementById('eliminarClave').value = event.relatedTarget.dataset.clave;
+  document.getElementById('eliminarNombre').textContent = event.relatedTarget.dataset.producto;
+});
+formulario.addEventListener('submit', event => {
+  for (const campo of ['producto', 'marca', 'precio', 'url']) document.getElementById(campo).value = document.getElementById(campo).value.trim();
+  if (!formulario.checkValidity() || Number(document.getElementById('precio').value.replace(',', '.')) > 9999999999.99) {
+    event.preventDefault();
+    formulario.classList.add('was-validated');
+    aviso.textContent = 'Revisa los campos: producto y marca son obligatorios. El precio debe ser numérico, entre 0 y 9999999999.99, con máximo dos decimales; no se permite texto.';
+    aviso.classList.remove('d-none');
+    formulario.querySelector(':invalid')?.focus();
+  } else {
+    document.getElementById('precio').value = document.getElementById('precio').value.replace(',', '.');
+  }
+});
+document.querySelectorAll('form').forEach(form => form.addEventListener('submit', event => {
+  if (!event.defaultPrevented) form.querySelector('button[type="submit"]').disabled = true;
+}));
+</script>
+</body>
+</html>
